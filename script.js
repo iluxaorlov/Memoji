@@ -7,21 +7,22 @@ let timer = 59;
 let interval;
 
 document.getElementById('field').addEventListener('click', function(event) {
-    if (!gameStart) {
-        randomEmojis();
-        gameStart = true;
-        interval = setInterval(function() {
-            let seconds = String(timer).length === 2 ? timer-- : '0' + timer--;
-
-            document.getElementById('timer').innerHTML = '00:' + seconds;
-
-            if (timer === -1) {
-                lose();
-            }
-        }, 1000);
-    }
-
     if (event.target.className === 'back') {
+        if (!gameStart) {
+            randomEmojis();
+
+            gameStart = true;
+            interval = setInterval(function() {
+                let seconds = String(timer).length === 2 ? timer-- : '0' + timer--;
+
+                document.getElementById('timer').innerHTML = '00:' + seconds;
+
+                if (timer === -1) {
+                    lose();
+                }
+            }, 1000);
+        }
+        
         open(event.target);
     }
 
