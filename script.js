@@ -1,17 +1,21 @@
 'use strict';
 
-let previousCard;
-let wrongCard;
-let gameStart;
-let timer = 59;
-let interval;
+let gameStart = false,
+    timer = 59,
+    previousCard,
+    wrongCards,
+    interval;
 
 document.getElementById('field').addEventListener('click', function(event) {
     if (event.target.className === 'back') {
-        if (!gameStart) {
+        // clicking on a shirt
+        if (gameStart === false) {
+            // starting game
+            gameStart = true;
+            // insert emojis in cards
             randomEmojis();
 
-            gameStart = true;
+            // starting timer
             interval = setInterval(function() {
                 let seconds = String(timer).length === 2 ? timer-- : '0' + timer--;
 
@@ -27,58 +31,53 @@ document.getElementById('field').addEventListener('click', function(event) {
     }
 
     if (event.target.className === 'front') {
+        // clicking on a figure
         close(event.target);
     }
 
     if (document.getElementsByClassName('green').length === 12) {
+        // final of the game
         win();
     }
 });
 
 function randomEmojis() {
-    let emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻'];
-    let figures = Array.from(document.getElementsByClassName('front'));
-    let numbers = randomNumbersArray().concat(randomNumbersArray());
+    let emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🐶', '🐱', '🐭', '🐹', '🐰', '🐻'];
+    let cards = Array.from(document.getElementsByClassName('front'));
 
-    figures.forEach(function(item, i) {
-        item.innerHTML = emojis[numbers[i]];
+    emojis.sort(() => {
+        // randomize emojis array
+        return 0.5 - Math.random();
     });
 
-    function randomNumbersArray() {
-        let numbersArray = [];
-
-        for (let i = 0; i < 6;) {
-            let rand = Math.floor(Math.random() * (6 - 0)) + 0;
-            if (numbersArray.indexOf(rand) === -1) {
-                numbersArray.push(rand);
-                i++;
-            }
-        }
-
-        return numbersArray;
-    }
+    cards.forEach((card, key) => {
+        card.innerHTML = emojis[key];
+    });
 }
 
-function open(card) {
-    let figure = card;
-    let shirt = card.nextElementSibling;
+function open(back) {
+    // back
+    let shirt = back;
+    // front
+    let figure = shirt.nextElementSibling;
 
-    figure.style.transform = 'rotateY(180deg)';
-    shirt.style.transform = 'rotateY(0deg)';
+    shirt.style.transform = 'rotateY(180deg)';
+    figure.style.transform = 'rotateY(0deg)';
 
-    if (wrongCard) {
-        let cards = Array.from(document.getElementsByClassName('red'));
-        
-        cards.forEach(function(item) {
-            item.classList.remove('red');
-            close(item);
-        });
+    if (wrongCards) {
+        // previous cards are not equal
+        for (let card of Array.from(document.getElementsByClassName('red'))) {
+            card.classList.remove('red');
+            close(card);
+        }
     }
 
-    if (!previousCard) {
-        previousCard = shirt;
+    if (previousCard === undefined) {
+        // first card
+        previousCard = figure;
     } else {
-        let currentCard = shirt;
+        // second card
+        let currentCard = figure;
 
         if (previousCard.innerHTML === currentCard.innerHTML) {
             previousCard.classList.add('green');
@@ -86,19 +85,24 @@ function open(card) {
         } else {
             previousCard.classList.add('red');
             currentCard.classList.add('red');
-            wrongCard = true;
+            // cards are not equal
+            wrongCards = true;
         }
 
+        // clear previous card after actions
         previousCard = undefined;
     }
 }
 
-function close(card) {
-    let figure = card;
-    let shirt = card.previousElementSibling;
+function close(front) {
+    // front
+    let figure = front;
+    // back
+    let shirt = figure.previousElementSibling;
 
     figure.style.transform = 'rotateY(180deg)';
     shirt.style.transform = 'rotateY(0deg)';
+    // clear previous card after closing
     previousCard = undefined;
 }
 
@@ -117,18 +121,19 @@ function lose() {
 }
 
 document.getElementById('replay').addEventListener('click', function() {
-    let cards = Array.from(document.getElementsByClassName('front'));
+    for (let card of Array.from(document.getElementsByClassName('front'))) {
+        card.classList.remove('green');
+        card.classList.remove('red');
+        card.innerHTML = '';
+        close(card);
+    }
 
-    cards.forEach(function(item) {
-        document.getElementById('background').style.visibility = 'hidden';
-        item.classList.remove('green');
-        item.classList.remove('red');
-        close(item);
-    });
-
-    previousCard = undefined;
-    wrongCard = undefined;
-    gameStart = undefined;
+    // reset everything
+    gameStart = false;
     timer = 59;
+    previousCard = undefined;
+    wrongCards = undefined;
+    interval = undefined;
     document.getElementById('timer').innerHTML = '01:00';
+    document.getElementById('background').style.visibility = 'hidden';
 });
